@@ -120,7 +120,7 @@ int main(void)
 
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 13000;
+  htim3.Init.Prescaler = 17000;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();

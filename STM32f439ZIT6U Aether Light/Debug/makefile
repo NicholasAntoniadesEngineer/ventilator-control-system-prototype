@@ -54,8 +54,8 @@ all: main-build
 main-build: STM32F439ZIT6U\ Aether\ Light.elf secondary-outputs
 
 # Tool invocations
-STM32F439ZIT6U\ Aether\ Light.elf: $(OBJS) $(USER_OBJS) C:\Users\Nanodyn\ -\ Spare\OneDrive\ -\ Nanodyn\Desktop\GIT\ repository\Waveform-generator\Code\STM32f439ZIT6U\ Aether\ Light\STM32F439ZITX_FLASH.ld
-	arm-none-eabi-gcc -o "STM32F439ZIT6U Aether Light.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Nanodyn - Spare\OneDrive - Nanodyn\Desktop\GIT repository\Waveform-generator\Code\STM32f439ZIT6U Aether Light\STM32F439ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32F439ZIT6U Aether Light.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STM32F439ZIT6U\ Aether\ Light.elf: $(OBJS) $(USER_OBJS) C:\Users\Nanodyn\ -\ Spare\OneDrive\ -\ Nanodyn\Desktop\GIT\ repository\Aether-Light\STM32f439ZIT6U\ Aether\ Light\STM32F439ZITX_FLASH.ld
+	arm-none-eabi-gcc -o "STM32F439ZIT6U Aether Light.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Nanodyn - Spare\OneDrive - Nanodyn\Desktop\GIT repository\Aether-Light\STM32f439ZIT6U Aether Light\STM32F439ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32F439ZIT6U Aether Light.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
