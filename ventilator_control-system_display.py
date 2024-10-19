@@ -5,7 +5,7 @@ Author: Nicholas Antoniades
 
 Description:
 This script displays an application window for the Ventilator Control System,
-using Tkinter for the GUI and Matplotlib for real-time data plotting.
+using Tkinter for the GUI and Matplotlib for real-time data plotting on a Raspberry pi4B.
 
 The application reads pressure and flow data from a serial port, processes it, and
 updates the GUI with real-time plots of pressure (in cm H₂O) and volume (in L/min).
@@ -34,6 +34,32 @@ class MainPage(tk.Tk):
     def __init__(self):
         super().__init__()
 
+        # Serial communication setup
+        self.setup_serial_communication()
+
+        # Configure main window
+        self.title("Ventilator Control System")
+        width = self.winfo_screenwidth()
+        height = self.winfo_screenheight()
+        self.geometry(f"{width}x{height}+0+0")
+
+        # Container frame to hold other frames
+        container = tk.Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        # Initialize frames and show the main plotting graph
+        self.frames = {}
+        frame = PlottingGraph(container, self)
+        self.frames[PlottingGraph] = frame
+        frame.grid(row=0, column=0, sticky="nsew")
+        self.show_frame(PlottingGraph)
+
+    def setup_serial_communication(self):
+        """
+        Set up serial communication with the device.
+        """
         # Serial communication settings
         self.ser = serial.Serial('/dev/ttyS0', 115200, timeout=1)
         settings_new = {
@@ -61,25 +87,6 @@ class MainPage(tk.Tk):
 
         self.ser.flushInput()
 
-        # Configure main window
-        self.title("Ventilator Control System")
-        width = self.winfo_screenwidth()
-        height = self.winfo_screenheight()
-        self.geometry(f"{width}x{height}+0+0")
-
-        # Container frame to hold other frames
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-
-        # Initialize frames and show the main plotting graph
-        self.frames = {}
-        frame = PlottingGraph(container, self)
-        self.frames[PlottingGraph] = frame
-        frame.grid(row=0, column=0, sticky="nsew")
-        self.show_frame(PlottingGraph)
-
     def show_frame(self, cont):
         """
         Display the specified frame.
@@ -104,6 +111,31 @@ class PlottingGraph(tk.Frame):
         self.controller = controller
         self.ser = controller.ser
 
+        # Initialize data arrays and counters
+        self.initialize_data_arrays()
+
+        # Set up labels
+        self.setup_labels()
+
+        # Create the figure and axes
+        self.create_figure_and_axes()
+
+        # Configure axes appearance
+        self.configure_axes()
+
+        # Plot initial data
+        self.plot_initial_data()
+
+        # Create the Tkinter canvas to display the matplotlib figure
+        self.create_canvas()
+
+        # Start the animation functions
+        self.start_animations()
+
+    def initialize_data_arrays(self):
+        """
+        Initialize data arrays and counters for plotting.
+        """
         # Initialize counters (if needed for future extensions)
         self.update_counter1 = 0
         self.update_counter2 = 0
@@ -118,7 +150,10 @@ class PlottingGraph(tk.Frame):
         self.integral_flow = []
         self.time_flow = []
 
-        # Create labels for displaying current values and max values
+    def setup_labels(self):
+        """
+        Create labels for displaying current values and max values.
+        """
         self.label1 = tk.Label(self, text='Pressure', background='lightskyblue',
                                font=('Helvetica', 20), width=10)
         self.label1.place(relx=0.045, rely=0.1, anchor='nw')
@@ -135,7 +170,16 @@ class PlottingGraph(tk.Frame):
                                font=('Helvetica', 20), width=11, height=2)
         self.label4.place(relx=0.176, rely=0.6, anchor='c')
 
-        # Create the matplotlib figure and axes
+        # Bring labels to the front
+        self.label1.lift()
+        self.label2.lift()
+        self.label3.lift()
+        self.label4.lift()
+
+    def create_figure_and_axes(self):
+        """
+        Create the matplotlib figure and axes.
+        """
         self.figure = Figure(dpi=100)
         self.figure.set_facecolor('midnightblue')
 
@@ -143,6 +187,10 @@ class PlottingGraph(tk.Frame):
         self.ax1 = self.figure.add_subplot(211)
         self.ax2 = self.figure.add_subplot(212)
 
+    def configure_axes(self):
+        """
+        Configure the appearance of the axes.
+        """
         # Configure axes appearance
         self.ax1.set_facecolor('midnightblue')
         self.ax2.set_facecolor('midnightblue')
@@ -166,6 +214,10 @@ class PlottingGraph(tk.Frame):
 
         self.figure.tight_layout()
 
+    def plot_initial_data(self):
+        """
+        Plot the initial data on the axes.
+        """
         # Plot initial data
         self.line1, = self.ax1.plot(self.x_data, self.y1_data, color='lightskyblue')
         self.line2, = self.ax2.plot(self.x_data, self.y2_data, color='lightskyblue')
@@ -176,18 +228,18 @@ class PlottingGraph(tk.Frame):
         self.ax2.axvline(50, color='white')
         self.ax2.axvline(150, color='white')
 
-        # Create the Tkinter canvas to display the matplotlib figure
+    def create_canvas(self):
+        """
+        Create the Tkinter canvas to display the matplotlib figure.
+        """
         self.canvas = FigureCanvasTkAgg(self.figure, self)
         self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.canvas._tkcanvas.pack(side=tk.RIGHT, expand=True)
 
-        # Bring labels to the front
-        self.label1.lift()
-        self.label2.lift()
-        self.label3.lift()
-        self.label4.lift()
-
-        # Start the animation functions
+    def start_animations(self):
+        """
+        Start the animation functions for the plots.
+        """
         self.ani1 = animation.FuncAnimation(self.figure, self.animate1, interval=10, blit=True)
         self.ani2 = animation.FuncAnimation(self.figure, self.animate2, interval=10, blit=True)
 
