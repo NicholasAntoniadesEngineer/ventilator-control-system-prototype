@@ -74,4 +74,4 @@ This project serves as a foundation for testing hardware components and developi
 
 2. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/ventilator-control-system.git
+   git clone https://github.com/NicholasAntoniadesEngineer/ventilator-control-system.git
