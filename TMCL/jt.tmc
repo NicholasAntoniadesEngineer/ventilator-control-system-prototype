@@ -1,0 +1,20 @@
+// *** Values that have to be adapted *** //
+stallGuardValue = 2  			//-64 = highest sensitivity ... 63 = lowest sensitivity
+vmax = 1000					//max. speed (0 ... 2047)
+amax = 7629278						//max. acceleration (0 ... 2047)
+cmax = 255				//max. current (0 ... 255)
+
+// *** Initialization / Set up axis parameter *** //
+SAP 1, 0, 0    					//reset actual position to 0
+SGP 3, 2, 7629278
+SAP 4, 0, vmax   				//set max. positioning speed
+SAP 5, 0, amax					//set max. acceleration
+SAP 6, 0, cmax    				//set max. current
+// *** stallGuard™ initialization *** //
+
+// *** Interrupt initialization *** //
+
+// *** Main Loop *** //
+loop:
+	//ROL 0, vmax					//turn motor left at vmax
+	JA loop						//jump to loop

@@ -1,0 +1,35 @@
+SAP 171, 0, 0 // smartEnergy current up step
+SAP 169, 0, 3 // smartEnergy current down step
+SAP 172, 0, 1 // smartEnergy hysteresis start
+SAP 170, 0, 3 // smartEnergy hysteresis
+SAP 168, 0, 1 // smartEnergy current minimum (SEIMIN)
+SAP 182, 0, 15 // smartEnergy threshold speed
+SAP 174, 0, 2 // stallGuard2 threshold
+SAP 7, 0, 8 // Standby current
+SAP 173, 0, 0 // stallGuard2 filter enable
+SAP 181, 0, 25000 // stop-on-stall velocity
+SAP 6, 0, 255 // Maximum current
+
+
+// Another option
+SAP 171, 0, 3 // smartEnergy current up step
+SAP 169, 0, 3 // smartEnergy current down step
+SAP 172, 0, 1 // smartEnergy hysteresis start
+SAP 170, 0, 3 // smartEnergy hysteresis
+SAP 168, 0, 1 // smartEnergy current minimum (SEIMIN)
+SAP 182, 0, 15 // smartEnergy threshold speed
+SAP 174, 0, 4 // stallGuard2 threshold
+SAP 7, 0, 8 // Standby current
+SAP 173, 0, 0 // stallGuard2 filter enable
+SAP 181, 0, 25000 // stop-on-stall velocity
+SAP 6, 0, 255 // Maximum current
+
+
+SAP 6, 0, 255        //motor run current
+SAP 174, 0, 4    //stallGuard2 threshold value
+SAP 168, 0, 3    //coolStep minimum current setting
+SAP 169, 0, 1    //coolStep down step setting
+SAP 171, 0, 3    //coolStep up step setting
+SAP 170, 0, 0    //coolStep hysteresis width
+SAP 172, 0, 15    //coolStep hysteresis start
+SAP 182, 0, 15    //coolStep threshold speed

@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name Project-Aether-rescue)(type KiCad)(uri ${KIPRJMOD}/Project-Aether-rescue.pretty)(options "")(descr ""))
+  (lib (name "Project Aether footprints")(type KiCad)(uri "${KIPRJMOD}/Project Aether footprints.pretty")(options "")(descr ""))
+  (lib (name Schematic)(type KiCad)(uri "C:/Users/Nanodyn - Spare/Nanodyn/Nanodyn - Nanodyn_Systems_LabServer/Product Development/Projects/Ventilator/Control system/Schematic.pretty")(options "")(descr ""))
+)
