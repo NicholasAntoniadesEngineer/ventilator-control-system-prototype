@@ -28,7 +28,6 @@ This project serves as a foundation for testing hardware components and developi
   - Controls valves using GPIO pins.
   - Communicates with a host computer via UART.
   - Utilizes DMA for efficient data transfer.
-  - Follows AUTOSAR coding standards.
 
 - **Python GUI Application:**
   - Real-time plotting of pressure and volume data.
@@ -61,7 +60,7 @@ This project serves as a foundation for testing hardware components and developi
   - Required Python packages:
     - `numpy`
     - `matplotlib`
-    - `tkinter` (usually included with Python)
+    - `tkinter` 
     - `pyserial`
 
 ## Getting Started
