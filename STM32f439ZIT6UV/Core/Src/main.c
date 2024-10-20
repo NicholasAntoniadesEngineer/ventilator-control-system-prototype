@@ -20,10 +20,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lib.h"
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
+#include "user_app.h" 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,13 +40,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-uint8_t hmiTxBuffer[HMI_BUFFER_SIZE] = {0};  /**< UART transmit buffer */
-uint8_t hmiRxBuffer[HMI_BUFFER_SIZE] = {0};  /**< UART receive buffer */
-uint32_t adcValues[NUM_ADC_CHANNELS] = {0};  /**< ADC values buffer */
-float pressure = 0.0f;                       /**< Pressure value */
-uint8_t toggleValue = 0U;                    /**< Toggle value for DMA streams */
-uint8_t runFlag = 0U;                        /**< Run flag */
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -97,50 +87,24 @@ int main(void)
   MX_TIM3_Init();
 
   /* USER CODE BEGIN 2 */
-  /* Wait until the run flag is set */
-  while (runFlag == 0U)
-  {
-    __NOP();
-  }
+  /* Initialize user application */
+  user_app_init();
 
-  /* Configure TIM3 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 17000U;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  HAL_TIM_Base_Start_IT(&htim3);
+  /* Start user application */
+  user_app_start();
 
-  /* Set initial valve conditions */
-  HAL_GPIO_WritePin(GPIOB, Valve1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, Valve2_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_Delay(50U);
-
-    /* Toggle DMA streams for messaging and reading ADC values */
-    if (toggleValue == 1U)
-    {
-      HAL_ADC_Stop_DMA(&hadc1); /* Stop ADC DMA stream */
-      UART_Send_DMA(pressure);  /* Send data over UART using DMA */
-      toggleValue = 0U;
-    }
-    else
-    {
-      HAL_UART_DMAStop(&huart1); /* Stop UART DMA stream */
-      HAL_ADC_Start_DMA(&hadc1, adcValues, NUM_ADC_CHANNELS); /* Start ADC DMA stream */
-      toggleValue = 1U;
-    }
+    /* USER CODE END WHILE */
+  /* Run user application */
+    user_app_run();
+    /* USER CODE BEGIN 3 */
+    /* user_app_run() contains the infinite loop */
   }
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-  /* Additional user code can be added here */
   /* USER CODE END 3 */
 }
 
