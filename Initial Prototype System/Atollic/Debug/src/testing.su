@@ -1,4 +1,0 @@
-testing.c:17:6:EXTI0_1_IRQHandler	8	static
-testing.c:40:6:TIM6_DAC_IRQHandler	8	static
-testing.c:55:6:PWM_output	16	static
-testing.c:83:5:main	40	static
