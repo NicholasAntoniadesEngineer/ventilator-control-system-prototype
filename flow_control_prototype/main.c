@@ -1,36 +1,22 @@
-/*
- * main.c
- *
- * Main application code for the ventilator control system.
- *
- * Created on: 2020
- *     Author: Nicholas Antoniades
- */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main application code for ventilator control system
+  * @date           : 2020
+  * @author         : Nicholas Antoniades
+  ******************************************************************************
+  */
 
-#include "stm32_bsp.h"
-#include "sensors.h"
-#include "uart.h"
-#include "timers.h"
-#include "ventilator.h"
+#include "main.h"
 
-struct system_state {
-    struct sensor_state sensors;
-    struct uart_state uart;
-    struct ventilator_state ventilator;
-    struct timer_state timers;
-};
-
+/* Private variables */
 static struct system_state state;
 
-static void system_init(void);
-static void main_loop(void);
-
+/* Private function definitions */
 static void system_init(void)
 {
-    // Initialize BSP layer
     BSP_HAL_Init();
 
-    // Initialize modules with their respective states
     sensors_init(&state.sensors);
     uart_init(&state.uart);
     ventilator_init(&state.ventilator);
@@ -48,6 +34,7 @@ static void main_loop(void)
     }
 }
 
+/* Main function */
 int main(void)
 {
     system_init();
