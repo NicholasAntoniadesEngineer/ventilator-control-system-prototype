@@ -10,19 +10,10 @@
 #ifndef VENTILATOR_H_
 #define VENTILATOR_H_
 
-#include "state.h"
 #include "stdint.h"
 #include "sfm3000.h"
 #include "honeywell_i2c.h"
-
-/* Hardware state */
-struct hardware_state {
-    float gear_ratio;
-    uint8_t micro_step;
-    uint32_t total_steps_per_cycle;
-    uint8_t default_direction;
-    uint32_t step_counter;
-};
+#include "motor_control.h"
 
 /* Breathing cycle state */
 struct breathing_state {
@@ -53,20 +44,13 @@ struct status_state {
 
 /* Main ventilator state structure */
 struct ventilator_state {
-    struct hardware_state hardware;
+    struct motor_state motor;
     struct breathing_state breathing;
     struct volume_state volume;
     struct status_state status;
 };
 
 /* Configuration structures for ventilator initialization */
-struct hardware_config {
-    float gear_ratio;
-    uint8_t micro_step;
-    uint32_t steps_per_cycle;
-    uint8_t default_direction;
-};
-
 struct breathing_params {
     uint8_t breaths_per_minute;
     float ie_ratio;
@@ -78,15 +62,12 @@ struct volume_params {
 };
 
 struct ventilator_config {
-    struct hardware_config hardware;
+    struct motor_config motor;
     struct breathing_params breathing;
     struct volume_params volume;
 };
 
 /* Calculation macros for ventilator initialization */
-#define CALC_TOTAL_STEPS(steps, micro_step, gear_ratio) \
-    ((steps) * (uint32_t)((micro_step) * (gear_ratio)))
-
 #define CALC_CYCLE_TIME(breaths_per_min) \
     (60 / (breaths_per_min))
 
@@ -105,13 +86,18 @@ struct ventilator_config {
 #define CALC_REQUIRED_STEPS(total_steps, desired_vol, max_vol) \
     ((total_steps) * (desired_vol) / ((max_vol) * 2))
 
+/* Error flags */
+#define ERROR_FLAG_SENSOR_FAILURE 0x01
+#define ERROR_FLAG_INVALID_STATE  0x02
+
 /**
  * @brief Initialize the ventilator configuration and hardware.
  *
  * @param state Pointer to ventilator_state structure where state is stored.
  * @param config Pointer to ventilator_config structure containing initialization parameters.
+ * @return int8_t Returns 0 on success, negative value on error
  */
-void ventilator_init(struct ventilator_state *state, const struct ventilator_config *config);
+uint8_t ventilator_init(struct ventilator_state *state, const struct ventilator_config *config);
 
 /**
  * @brief Update the ventilator state machine based on sensor readings and control logic.
@@ -119,9 +105,10 @@ void ventilator_init(struct ventilator_state *state, const struct ventilator_con
  * @param state Pointer to ventilator_state structure containing current state.
  * @param flow_sensor Pointer to sfm3000_state structure containing flow sensor readings.
  * @param pressure_sensor Pointer to honeywell_data structure containing pressure sensor readings.
+ * @return int8_t Returns 0 on success, negative value on error
  */
-void ventilator_update_state(struct ventilator_state *state, 
-                           const struct sfm3000_state *flow_sensor,
-                           const struct honeywell_data *pressure_sensor);
+uint8_t ventilator_update_state(struct ventilator_state *state, 
+                               const struct sfm3000_state *flow_sensor,
+                               const struct honeywell_data *pressure_sensor);
 
 #endif /* VENTILATOR_H_ */ 
