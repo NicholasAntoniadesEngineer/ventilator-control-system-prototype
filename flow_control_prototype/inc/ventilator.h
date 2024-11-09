@@ -12,6 +12,8 @@
 
 #include "state.h"
 #include "stdint.h"
+#include "sfm3000.h"
+#include "honeywell_i2c.h"
 
 /* Hardware state */
 struct hardware_state {
@@ -115,8 +117,11 @@ void ventilator_init(struct ventilator_state *state, const struct ventilator_con
  * @brief Update the ventilator state machine based on sensor readings and control logic.
  *
  * @param state Pointer to ventilator_state structure containing current state.
- * @param sensors Pointer to sensor_state structure containing sensor readings.
+ * @param flow_sensor Pointer to sfm3000_state structure containing flow sensor readings.
+ * @param pressure_sensor Pointer to honeywell_data structure containing pressure sensor readings.
  */
-void ventilator_update_state(struct ventilator_state *state, const struct sensor_state *sensors);
+void ventilator_update_state(struct ventilator_state *state, 
+                           const struct sfm3000_state *flow_sensor,
+                           const struct honeywell_data *pressure_sensor);
 
 #endif /* VENTILATOR_H_ */ 
