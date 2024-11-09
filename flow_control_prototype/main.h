@@ -1,8 +1,6 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#include "stm32_bsp.h"
-#include "sensors.h"
 #include "uart.h"
 #include "timers.h"
 #include "ventilator.h"

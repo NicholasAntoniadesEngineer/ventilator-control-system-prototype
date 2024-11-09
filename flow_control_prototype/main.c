@@ -8,6 +8,12 @@
   */
 
 #include "main.h"
+#include "stm32_bsp.h"
+#include "uart.h"
+#include "timers.h"
+#include "ventilator.h"
+#include "sfm3000.h"
+#include "honeywell_i2c.h"
 
 /* Private variables */
 static struct system_state state;
