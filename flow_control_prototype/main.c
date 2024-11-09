@@ -33,17 +33,17 @@ const struct ventilator_config vent_config = {
 static void system_init(void)
 {
 
-    BSP_HAL_Init();
+	BSP_HAL_Init();
 
 	timers_init(&state.timers);
 
 	uart_init(&state.uart);
 
-    sfm3000_init(&state.flow_sensor);
+	sfm3000_init(&state.flow_sensor);
 
-    honeywell_init(&state.pressure_sensor);
+	honeywell_init(&state.pressure_sensor);
 
-    ventilator_init(&state.ventilator, &vent_config);
+	ventilator_init(&state.ventilator, &vent_config);
 
 }
 
