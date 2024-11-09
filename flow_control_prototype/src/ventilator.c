@@ -9,6 +9,10 @@
 
 #include "ventilator.h"
 #include "stm32_bsp.h"
+#include "state.h"
+#include "stdint.h"
+#include "sfm3000.h"
+#include "honeywell_i2c.h"
 
 /* Private function prototypes */
 static void set_motor_direction(uint8_t direction);
@@ -102,8 +106,16 @@ static void handle_expiration(struct ventilator_state *state)
 }
 
 /* State machine implementation */
-void ventilator_update_state(struct ventilator_state *state, const struct sensor_state *sensors)
+void ventilator_update_state(struct ventilator_state *state, 
+                           const struct sfm3000_state *flow_sensor,
+                           const struct honeywell_data *pressure_sensor)
 {
+    // Check sensor status
+    if (!sfm3000_check_status(flow_sensor) || !honeywell_check_status(pressure_sensor)) {
+        state->status.error_flags |= ERROR_FLAG_SENSOR_FAILURE;
+        return;
+    }
+
     switch(state->breathing.cycle_stage)
     {
         case 1: // Inspiration

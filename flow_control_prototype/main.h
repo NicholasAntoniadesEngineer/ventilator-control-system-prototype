@@ -6,6 +6,8 @@
 #include "uart.h"
 #include "timers.h"
 #include "ventilator.h"
+#include "sfm3000.h"
+#include "honeywell_i2c.h"
 
 /* Hardware configuration defaults */
 #define HARDWARE_GEAR_RATIO          1.6f
@@ -23,7 +25,8 @@
 
 /* System state structure */
 struct system_state {
-    struct sensor_state sensors;
+    struct sfm3000_state flow_sensor;
+    struct honeywell_data pressure_sensor;
     struct uart_state uart;
     struct ventilator_state ventilator;
     struct timer_state timers;

@@ -38,7 +38,9 @@ static void system_init(void)
 
 	uart_init(&state.uart);
 
-    sensors_init(&state.sensors);
+    sfm3000_init(&state.flow_sensor);
+	
+    honeywell_init(&state.pressure_sensor);
 
     ventilator_init(&state.ventilator, &vent_config);
 
@@ -48,11 +50,12 @@ static void main_loop(void)
 {
     while (1)
     {
-        sensors_read_flow(&state.sensors);
+        sfm3000_read_flow(&state.flow_sensor);
+        honeywell_read_pressure(&state.pressure_sensor);
 
-        sensors_read_pressure(&state.sensors);
-
-        ventilator_update_state(&state.ventilator, &state.sensors);
+        ventilator_update_state(&state.ventilator, 
+                              &state.flow_sensor,
+                              &state.pressure_sensor);
 
         uart_handle_communication(&state.uart);
     }
