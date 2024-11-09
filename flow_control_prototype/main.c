@@ -7,76 +7,50 @@
  *     Author: Nicholas Antoniades
  */
 
-#include "main.h"
-#include "config.h"
-#include "ventilator.h"
+#include "stm32_bsp.h"
 #include "sensors.h"
 #include "uart.h"
 #include "timers.h"
+#include "ventilator.h"
 
-// Global configuration structure
-VentilatorConfig ventilator_config;
+struct system_state {
+    struct sensor_state sensors;
+    struct uart_state uart;
+    struct ventilator_state ventilator;
+    struct timer_state timers;
+};
 
-// Function prototypes
-void system_init(void);
-void main_loop(void);
+static struct system_state state;
 
-void system_init(void)
+static void system_init(void);
+static void main_loop(void);
+
+static void system_init(void)
 {
-    // HAL initialization
-    HAL_Init();
-    SystemClock_Config();
+    // Initialize BSP layer
+    BSP_HAL_Init();
 
-    // Initialize peripherals
-    MX_GPIO_Init();
-    MX_DMA_Init();
-    MX_ADC1_Init();
-    MX_I2C1_Init();
-    MX_USART1_UART_Init();
-    MX_USART2_UART_Init();
-    MX_I2C3_Init();
-    MX_DAC_Init();
-    MX_RTC_Init();
-    MX_USART3_UART_Init();
+    // Initialize modules with their respective states
+    sensors_init(&state.sensors);
+    uart_init(&state.uart);
+    ventilator_init(&state.ventilator);
+    timers_init(&state.timers);
+}
 
-    // Initialize configurations
-    ventilator_init(&ventilator_config);
-
-    // Initialize other modules
-    sensors_init();
-    uart_init();
-    timers_init();
+static void main_loop(void)
+{
+    while (1)
+    {
+        sensors_read_flow(&state.sensors);
+        sensors_read_pressure(&state.sensors);
+        ventilator_update_state(&state.ventilator, &state.sensors);
+        uart_handle_communication(&state.uart);
+    }
 }
 
 int main(void)
 {
-    // Initialize the system
     system_init();
-
-    // Enter main loop
     main_loop();
-
-    // Should never reach here
     return 0;
 }
-
-void main_loop(void)
-{
-    while (1)
-    {
-        // Read sensors
-        sensors_read_flow(&ventilator_config);
-
-        sensors_read_pressure(&ventilator_config);
-
-        // Update ventilator state
-        ventilator_update_state(&ventilator_config);
-
-        // Handle UART communication
-        uart_handle_communication();
-
-        // Toggle between ADC and UART DMA streams
-        toggle_dma_streams();
-    }
-}
-

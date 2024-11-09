@@ -8,81 +8,87 @@
  */
 
 #include "sensors.h"
-#include "config.h"
-#include "i2c.h"
-#include "adc.h"
-#include "rtc.h"
+#include "stm32_bsp.h"
 
-/**
- * @brief Initialize all sensors used in the ventilator system.
- */
-void sensors_init(void)
+/* Private function prototypes */
+static void sfm3000_init(void);
+static void honeywell_pressure_init(void);
+static float sfm3000_read_flow_value(void);
+static float honeywell_read_pressure_value(void);
+
+void sensors_init(struct sensor_state *state)
 {
-    // Initialize I2C sensors
-    sfm3000_init();             // Sensirion flow sensor initialization
-    honeywell_pressure_init();  // Honeywell pressure sensor initialization
-
-    // Initialize ADC for analog sensors
-    init_adc_channels();
+    sfm3000_init();             
+    honeywell_pressure_init();  
+    
+    // Initialize state
+    for(int i = 0; i < FLOW_HISTORY_SIZE; i++) {
+        state->flow_history[i] = 0.0f;
+    }
+    state->current_flow = 0.0f;
+    state->current_pressure = 0.0f;
+    state->tidal_volume[0] = 0.0f;
+    state->tidal_volume[1] = 0.0f;
+    
+    // Power up flow sensor
+    BSP_GPIO_WritePin(FLOW_POWER_GPIO_Port, FLOW_POWER_Pin, GPIO_PIN_SET);
+    state->flow_sensor_initialized = 1;
+    state->pressure_sensor_initialized = 1;
+    state->sensor_error_flags = 0;
 }
 
-/**
- * @brief Read flow sensor data and update configuration.
- *
- * @param config Pointer to VentilatorConfig structure containing current configurations.
- */
-void sensors_read_flow(VentilatorConfig *config)
+void sensors_read_flow(struct sensor_state *state)
 {
-    // Read flow from Sensirion flow sensor
-    float flow = sfm3000_read_flow();
-    config->current_flow = flow;
-
-    // Additional processing if necessary
+    float flow = sfm3000_read_flow_value();
+    state->current_flow = flow;
+    
+    // Update flow history
+    for(int i = FLOW_HISTORY_SIZE - 1; i > 0; i--) {
+        state->flow_history[i] = state->flow_history[i-1];
+    }
+    state->flow_history[0] = flow;
 }
 
-/**
- * @brief Read pressure sensor data and update configuration.
- *
- * @param config Pointer to VentilatorConfig structure containing current configurations.
- */
-void sensors_read_pressure(VentilatorConfig *config)
+void sensors_read_pressure(struct sensor_state *state)
 {
-    // Read pressure from Honeywell sensor
-    float pressure = honeywell_read_pressure();
-    config->current_pressure = pressure;
-
-    // Additional processing if necessary
+    float pressure = honeywell_read_pressure_value();
+    state->current_pressure = pressure;
 }
 
-/**
- * @brief Initialize ADC channels for analog sensors.
- */
-void init_adc_channels(void)
+static void sfm3000_init(void)
 {
-    ADC_ChannelConfTypeDef sConfig = {0};
-
-    // Configure ADC channels
-    sConfig.Channel = ADC_CHANNEL_0;     // Replace with appropriate channel
-    sConfig.Rank = 1;
-    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
-
-    // Add configurations for other channels as needed
+    uint8_t init_data[] = {0x10, 0x00};
+    BSP_I2C_Write(&hi2c1, SFM3000_I2C_ADDR, 0x00, init_data, sizeof(init_data));
+    HAL_Delay(100); // Wait for sensor initialization
 }
 
-/**
- * @brief Read value from an ADC channel.
- *
- * @param channel ADC channel number.
- * @return uint32_t ADC conversion result.
- */
-uint32_t read_adc_channel(uint32_t channel)
+static void honeywell_pressure_init(void)
 {
-    ADC_ChannelConfTypeDef sConfig = {0};
-    sConfig.Channel = channel;
-    sConfig.Rank = 1;
-    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    uint8_t init_data[] = {0x01};
+    BSP_I2C_Write(&hi2c1, HONEYWELL_I2C_ADDR, 0x00, init_data, sizeof(init_data));
+    HAL_Delay(100); // Wait for sensor initialization
+}
 
-    HAL_ADC_Start(&hadc1);
-    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-    return HAL_ADC_GetValue(&hadc1);
+static float sfm3000_read_flow_value(void)
+{
+    uint8_t data[3];
+    BSP_I2C_Read(&hi2c1, SFM3000_I2C_ADDR, FLOW_REG_ADDR, data, sizeof(data));
+    
+    // Convert raw data to flow value
+    int16_t raw_flow = (data[0] << 8) | data[1];
+    float flow = (float)raw_flow * FLOW_CONVERSION_FACTOR;
+    
+    return flow;
+}
+
+static float honeywell_read_pressure_value(void)
+{
+    uint8_t data[4];
+    BSP_I2C_Read(&hi2c1, HONEYWELL_I2C_ADDR, PRESSURE_REG_ADDR, data, sizeof(data));
+    
+    // Convert raw data to pressure value
+    uint16_t raw_pressure = (data[0] << 8) | data[1];
+    float pressure = (float)raw_pressure * PRESSURE_CONVERSION_FACTOR;
+    
+    return pressure;
 } 

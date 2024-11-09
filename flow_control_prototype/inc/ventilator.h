@@ -10,21 +10,21 @@
 #ifndef VENTILATOR_H_
 #define VENTILATOR_H_
 
-#include "config.h"
+#include "state.h"
 #include "stdint.h"
 
 /**
  * @brief Initialize the ventilator configuration and hardware.
  *
- * @param config Pointer to VentilatorConfig structure where configurations are stored.
+ * @param state Pointer to ventilator_state structure where state is stored.
  */
-void ventilator_init(VentilatorConfig *config);
+void ventilator_init(ventilator_state *state);
 
 /**
  * @brief Update the ventilator state machine based on sensor readings and control logic.
  *
- * @param config Pointer to VentilatorConfig structure containing current configurations.
+ * @param state Pointer to ventilator_state structure containing current state.
  */
-void ventilator_update_state(VentilatorConfig *config);
+void ventilator_update_state(ventilator_state *state);
 
 #endif /* VENTILATOR_H_ */ 

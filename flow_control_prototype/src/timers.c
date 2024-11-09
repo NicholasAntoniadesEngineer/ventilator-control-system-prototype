@@ -1,63 +1,58 @@
 /*
  * timers.c
  *
- * Timer initialization and handling functions.
+ * Timer functions implementation.
  *
  * Created on: 2020
  *     Author: Nicholas Antoniades
  */
 
 #include "timers.h"
-#include "tim.h"
-#include "ventilator.h"
-#include "config.h"
+#include "stm32_bsp.h"
 
-/**
- * @brief Initialize timer peripherals for the ventilator system.
- */
-void timers_init(void)
+void timers_init(struct timer_state *state)
 {
-    // Configure and initialize timer 3 for periodic interrupts
-    htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 0;
-    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 1000;  // Adjust as needed
-    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&htim3);
+    state->last_tick = 0;
+    state->period_ms = 0;
+    state->timer_active = 0;
+    state->overflow_count = 0;
 
-    // Enable timer interrupt
-    HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+    // Start the base timers
+    BSP_TIM_Base_Start(&htim2);
+    BSP_TIM_Base_Start(&htim3);
+    BSP_TIM_Base_Start(&htim4);
 }
 
-/**
- * @brief Start timers and enable interrupts.
- */
-void timers_start(void)
+void timers_start(struct timer_state *state, uint32_t period_ms)
 {
-    // Start timer with interrupt enabled
-    HAL_TIM_Base_Start_IT(&htim3);
+    state->last_tick = BSP_GetTick();
+    state->period_ms = period_ms;
+    state->timer_active = 1;
 }
 
-/**
- * @brief Timer period elapsed callback function.
- *
- * @param htim Timer handle pointer.
- */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+void timers_stop(struct timer_state *state)
 {
-    if (htim->Instance == TIM3)
-    {
-        // Handle timer interrupt for ventilator control
-        ventilator_timer_callback();
+    state->timer_active = 0;
+}
+
+uint8_t timers_elapsed(struct timer_state *state)
+{
+    if (!state->timer_active) {
+        return 0;
     }
+
+    uint32_t current_tick = BSP_GetTick();
+    
+    if (current_tick - state->last_tick >= state->period_ms) {
+        state->last_tick = current_tick;
+        state->overflow_count++;
+        return 1;
+    }
+    
+    return 0;
 }
 
-/**
- * @brief Ventilator timer callback function called from timer interrupt.
- */
-void ventilator_timer_callback(void)
+uint32_t timers_get_count(struct timer_state *state)
 {
-    // Update ventilator state machine
-    ventilator_update_state(&ventilator_config);
+    return state->overflow_count;
 } 
