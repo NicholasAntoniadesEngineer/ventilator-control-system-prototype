@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+
 /*
 ------------------------------------------------------------------------------
    Project	: Ventilator control system
@@ -7,49 +7,18 @@
    Author 	: Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
-/* USER CODE END Header */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/* Includes ------------------------------------------------------------------*/
+
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
-/* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
 void PWM_frequency_set(uint32_t Fpwm, uint32_t PSC);
 
-/* USER CODE END EFP */
-
-/* Private defines -----------------------------------------------------------*/
 #define TMCL_Stage_Pin GPIO_PIN_6
 #define TMCL_Stage_GPIO_Port GPIOE
 #define TMCL_Stage_EXTI_IRQn EXTI9_5_IRQn
@@ -84,12 +53,6 @@ void SensirionFlow(uint8_t FlowBuffer[3], float FlowSensirionOld[20],float FlowS
 void SensirionFlowSensor(uint8_t FlowBuffer[3], float FlowSensirion[20], float deltaFlow, float FlowSensirionTotal);
 void UARTSendDMA(uint8_t eightBitResult[4], float pressure,	uint8_t HMI_tx_buff[], float FlowSensirion[20],float TidalVolume[2], uint8_t HMI_rx_buff[]);
 void IntegrationForVolume(float deltaFlow, float deltaTime,	float FlowSensirion[20], float TidalVolume[2]) ;
-/* USER CODE END Private defines */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* __MAIN_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

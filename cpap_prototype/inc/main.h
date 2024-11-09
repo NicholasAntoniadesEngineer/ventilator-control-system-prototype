@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /*
 ------------------------------------------------------------------------------
    Project	: Ventilator control system
@@ -7,48 +6,16 @@
    Author 	: Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
-/* USER CODE END Header */
-
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-/* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
 
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
-/* Exported functions prototypes ---------------------------------------------*/
-void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
 void PWM_frequency_set(uint32_t Fpwm, uint32_t PSC);
 
-/* USER CODE END EFP */
 
-/* Private defines -----------------------------------------------------------*/
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
 #define B1_EXTI_IRQn EXTI15_10_IRQn
@@ -62,7 +29,7 @@ void PWM_frequency_set(uint32_t Fpwm, uint32_t PSC);
 #define OFF_Pin GPIO_PIN_5
 #define OFF_GPIO_Port GPIOB
 #define OFF_EXTI_IRQn EXTI9_5_IRQn
-/* USER CODE BEGIN Private defines */
+
 
 void initializations(void);
 void I2C_read(uint8_t Device_Addr, uint16_t Device_reg, uint8_t buff_tx[], uint8_t buff_rx[]);
@@ -80,12 +47,6 @@ void SensirionFlow(uint8_t FlowBuffer[3], float FlowSensirionOld[20],float FlowS
 void SensirionFlowSensor(uint8_t FlowBuffer[3], float FlowSensirion[20], float deltaFlow, float FlowSensirionTotal);
 void UARTSendDMA(uint8_t eightBitResult[4], float pressure,	uint8_t HMI_tx_buff[], uint8_t HMI_rx_buff[]);
 void IntegrationForVolume(float deltaFlow, float deltaTime,	float FlowSensirion[20], float TidalVolume[2]) ;
-/* USER CODE END Private defines */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* __MAIN_H */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

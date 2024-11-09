@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /*
 ------------------------------------------------------------------------------
    Project  : Ventilator Control System
@@ -7,7 +6,6 @@
    Author   : Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
-/* USER CODE END Header */
 
 #include "bsp.h"
 #include "lib.h"
