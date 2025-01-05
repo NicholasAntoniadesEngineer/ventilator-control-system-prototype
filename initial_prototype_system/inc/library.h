@@ -1,8 +1,8 @@
 /*
  * Library.h
  *
- *  Created on: 24 Apr 2020
- *      Author: Nicholas Antoniades
+ * Created on: 24 Apr 2020
+ * Author: Nicholas Antoniades
  */
 
 #ifndef LIBRARY_H_
@@ -12,27 +12,36 @@
 #define STM32F051
 #include "stm32f0xx.h"
 
-//Initialisations
-void init_PWM(int frequency);
-void init_ADC(void);
-int ADC_input(int pot, int resolution);
-int ADC_DATA(void);
-void init_Ports(void);
-void libs_delay(int time);
-void libs_init_TIM6(uint32_t arr, uint32_t psc);
-void libs_TIM6_PSC(uint32_t psc);
-void libs_TIM6_ARR(uint32_t arr);
-int libs_check_button_GPIOA(int button);
-int libs_check_button_GPIOB(int button);
-void libs_debounce(void);
-void libs_ack_irq(void);
-void init_EXTI(void);
-void EXTIO_1_interrupt(int toggleVal, int counter, int countTo);
-void TIM6_DAC_interrupt(int toggleVal);
-void libs_init_USART1(void);
-void USART1_transmit(unsigned char DataToTx);
-unsigned char USART1_receive(void);
-void ADC_AWD_8bit(int ADC_channel, int ADC_Low_threshhold, int ADC_High_threshhold);
-int ADC_AWD_check(void);
+// Pin masks
+#define PA8_MASK  0x0100
+#define PA9_MASK  0x0200
+#define PA10_MASK 0x0400
+#define PB12_MASK 0x1000
+#define PB13_MASK 0x2000
+#define PB14_MASK 0x4000
+#define PB15_MASK 0x8000
+
+// Function prototypes
+void lib_init_ports(void);
+void lib_init_pwm_tim(TIM_HandleTypeDef *htim, uint32_t channel, uint32_t frequency);
+void lib_init_pwm(int frequency);
+void lib_init_adc(void);
+void lib_init_usart(UART_HandleTypeDef *huart);
+void lib_init_usart1(void);
+void lib_init_tim6(uint32_t arr, uint32_t psc)
+int lib_adc_input(int pot, int resolution);
+void lib_adc_awd_8bit(int ADC_channel, int ADC_Low_threshhold, int ADC_High_threshhold);
+int lib_adc_awd_check(void);
+int lib_adc_data(void);
+void lib_delay(int time);
+int lib_check_button_gpioa(int button);
+int lib_check_button_gpiob(int button);
+void lib_debounce(void);
+void lib_tim6_set_psc(uint32_t psc);
+void lib_tim6_set_arr(uint32_t arr);
+void lib_ack_irq(void);
+void lib_init_exti(void);
+void lib_usart1_transmit(unsigned char DataToTx);
+unsigned char lib_usart1_receive(void);
 
 #endif /* LIBRARY_H_ */
