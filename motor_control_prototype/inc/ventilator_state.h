@@ -2,6 +2,7 @@
 #define VENTILATOR_STATE_H_
 
 #include <stdint.h>
+#include "stm32_bsp.h"
 
 /* PWM state structure */
 struct pwm_state 
@@ -9,7 +10,7 @@ struct pwm_state
     double arr_val;
     double arr_bottom;
     double arr_top;
-    TIM_TypeDef* timer;
+    TIM_HandleTypeDef* timer;
     uint32_t channel;
 };
 
@@ -47,11 +48,11 @@ struct uart_state
 {
     uint32_t counter;
     uint32_t frequency;
-    uint8_t tx_buffer[64];
-    uint8_t rx_buffer[64];
+    uint8_t tx_buffer[BSP_HMI_BUFFER_SIZE];
+    uint8_t rx_buffer[BSP_HMI_BUFFER_SIZE];
 };
 
-/* Main ventilator state structure */
+/* Complete ventilator state */
 struct ventilator_state 
 {
     struct pwm_state pwm;
@@ -59,16 +60,7 @@ struct ventilator_state
     struct breathing_control breathing;
     struct sensor_state sensors;
     struct uart_state uart;
-    uint8_t current_state;
-};
-
-/* Configuration structure */
-struct ventilator_config 
-{
-    uint32_t bpm_max;
-    uint32_t pause_delay_ms;
-    uint32_t plateau_delay_ms;
-    uint32_t system_clock;
+    bsp_state_t bsp;
 };
 
 #endif /* VENTILATOR_STATE_H_ */ 

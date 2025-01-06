@@ -7,7 +7,7 @@
 #define STM32F051
 #include "stm32f0xx.h"
 #include <stdint.h>
-#include "Library.h"
+#include "stm32_lib.h"
 #include <stm32f0xx_exti.h>
 #include "stm32f051x8.h"
 

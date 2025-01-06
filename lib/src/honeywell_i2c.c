@@ -3,7 +3,7 @@
 
 int8_t honeywell_init(void)
 {
-    // Add any specific initialization sequence required for Honeywell sensor
+    /* Add any specific initialization sequence required for Honeywell sensor */
     return 0;
 }
 
@@ -28,5 +28,5 @@ float honeywell_get_pressure(const struct honeywell_data *data)
 
 uint8_t honeywell_check_status(const struct honeywell_data *data)
 {
-    return (data->status & 0xC0) == 0; // Check status bits
+    return (data->status & 0xC0) == 0; /* Check status bits */
 } 

@@ -11,7 +11,7 @@
 #include "stm32_bsp.h"
 #include "uart.h"
 #include "timers.h"
-#include "ventilator.h"
+#include "ventilator_control.h"
 #include "sfm3000.h"
 #include "honeywell_i2c.h"
 
@@ -38,7 +38,6 @@ const struct ventilator_config vent_config = {
 /* Private function definitions */
 static void system_init(void)
 {
-
 	BSP_HAL_Init();
 
 	timers_init(&state.timers);
@@ -49,7 +48,7 @@ static void system_init(void)
 
 	honeywell_init(&state.pressure_sensor);
 
-	ventilator_init(&state.ventilator, &vent_config);
+	ventilator_control_init(&state.ventilator, &vent_config);
 
 }
 
@@ -61,9 +60,9 @@ static void main_loop(void)
 
         honeywell_read_pressure(&state.pressure_sensor);
 
-        ventilator_update_state(&state.ventilator, 
-                                &state.flow_sensor,
-                                &state.pressure_sensor);
+        ventilator_control_update_state(&state.ventilator, 
+                                      &state.flow_sensor,
+                                      &state.pressure_sensor);
 
         uart_handle_communication(&state.uart);
     }

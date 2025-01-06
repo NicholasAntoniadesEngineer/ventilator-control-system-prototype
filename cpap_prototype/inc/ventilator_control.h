@@ -2,17 +2,17 @@
 /*
 ------------------------------------------------------------------------------
    Project  : Ventilator Control System
-   File     : user_app.h
-   Brief    : Header file for user application logic.
+   File     : ventilator_control.h
+   Brief    : Header file for ventilator control logic.
    Author   : Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
 /* USER CODE END Header */
 
-#ifndef USER_APP_H
-#define USER_APP_H
+#ifndef VENTILATOR_CONTROL_H
+#define VENTILATOR_CONTROL_H
 
-#include "bsp.h"
+#include "stm32_bsp.h"
 
 /* Hardware configuration type */
 typedef struct {
@@ -40,24 +40,9 @@ typedef struct {
     uint8_t uart_tx_flag;
 } comm_config_t;
 
-/* Application configuration type */
-typedef struct {
-    hardware_config_t hardware;
-    breathing_config_t breathing;
-    comm_config_t comm;
-} app_config_t;
-
-/* Application state type */
-typedef struct {
-    bsp_state_t bsp_state;         /* BSP state */
-    hardware_config_t hardware;     /* Hardware configuration */
-    breathing_config_t breathing;   /* Breathing parameters */
-    comm_config_t comm;            /* Communication parameters */
-} app_state_t;
-
 /* Function prototypes */
-void user_app_init(app_state_t *app_state, const app_config_t *app_config);
-void user_app_start(app_state_t *app_state);
-void user_app_run(app_state_t *app_state);
+void ventilator_control_init(app_state_t *app_state, const app_config_t *app_config);
+void ventilator_control_start(app_state_t *app_state);
+void ventilator_control_run(app_state_t *app_state);
 
-#endif /* USER_APP_H */
+#endif /* VENTILATOR_CONTROL_H */ 

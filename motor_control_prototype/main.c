@@ -29,19 +29,28 @@ static const struct ventilator_config config =
 
 int main(void) 
 {
+    /* Initialize BSP */
+    BSP_HAL_Init();
+    
+    /* Initialize ventilator state */
     ventilator_init(&state, &config);
     
     while (1) 
-	{
-        // Handle button states
-        if (!lib_check_button_gpioa(0)) 
-		{
-            // Button released
+    {
+        /* Handle button states */
+        if (BSP_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_RESET) 
+        {
+            /* Button released */
             sensor_read_and_send(&state.sensors);
-        } else {
-            // Button pressed
+        } 
+        else 
+        {
+            /* Button pressed */
             handle_state_machine(&state);
         }
+        
+        /* Small delay to debounce */
+        BSP_Delay(10);
     }
     return 0;
 }

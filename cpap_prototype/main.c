@@ -2,28 +2,22 @@
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main application code for CPAP ventilator control system
-  * @date           : 2020
+  * @date           : 2024
   * @author         : Nicholas Antoniades
   ******************************************************************************
   */
 
 #include "main.h"
 #include "stm32_bsp.h"
-#include "user_app.h"
-#include "adc.h"
-#include "dma.h"
-#include "rtc.h"
-#include "tim.h"
-#include "usart.h"
-#include "gpio.h"
+#include "ventilator_control.h"
 
 /* Private variables */
 static struct system_state state;
 
-const struct app_config vent_config = {
+const struct ventilator_config vent_config = {
     .hardware = {
         .timer_prescaler = 17000U,
-        .adc_channels = NUM_ADC_CHANNELS,
+        .adc_channels = BSP_NUM_ADC_CHANNELS,
         .valve1_pin = Valve1_Pin,
         .valve2_pin = Valve2_Pin,
         .valve_port = GPIOB,
@@ -38,48 +32,46 @@ const struct app_config vent_config = {
         .sample_rate_ms = 50U
     },
     .communication = {
-        .uart_buffer_size = HMI_BUFFER_SIZE,
-        .uart_tx_flag = UART_TX_COMPLETE_FLAG
+        .uart_buffer_size = BSP_HMI_BUFFER_SIZE,
+        .uart_tx_flag = BSP_UART_TX_COMPLETE_FLAG
     }
 };
 
 static void system_init(void)
 {
-    /* MCU Configuration */
-    HAL_Init();
-    SystemClock_Config();
-
     /* Initialize BSP and peripherals */
     BSP_HAL_Init();
     
     /* Initialize application state with config */
-    user_app_init(&state.user_app, &vent_config);
+    ventilator_control_init(&state.ventilator_control, &vent_config);
 }
 
 static void main_loop(void)
 {
     /* Start the application */
-    user_app_start(&state.user_app);
+    ventilator_control_start(&state.ventilator_control);
     
     /* Main loop */
     while (1)
     {
         /* Read sensors and update state */
-        BSP_ADC_Start_DMA(state.user_app.adcValues, 
-                         state.user_app.hardware.adc_channels);
+        BSP_ADC_Start_DMA(&hadc1, (uint32_t*)state.ventilator_control.bsp_state.adcValues, 
+                         BSP_NUM_ADC_CHANNELS);
 
         /* Update application state */
-        user_app_run(&state.user_app);
+        ventilator_control_run(&state.ventilator_control);
 
         /* Handle communication */
-        if (state.user_app.toggleValue)
+        if (state.ventilator_control.bsp_state.toggleValue)
         {
-            BSP_UART_Send_DMA(state.user_app.pressure, 
-                             state.user_app.hmiTxBuffer);
+            uint8_t tx_buffer[BSP_HMI_BUFFER_SIZE];
+            memcpy(tx_buffer, &state.ventilator_control.bsp_state.pressure, sizeof(float));
+            tx_buffer[BSP_HMI_BUFFER_SIZE - 1] = BSP_UART_TX_COMPLETE_FLAG;
+            BSP_UART_Transmit_DMA(&huart1, tx_buffer, BSP_HMI_BUFFER_SIZE);
         }
 
         /* Delay for next sample */
-        HAL_Delay(state.user_app.breathing.sample_rate_ms);
+        BSP_Delay(state.ventilator_control.breathing.sample_rate_ms);
     }
 }
 
