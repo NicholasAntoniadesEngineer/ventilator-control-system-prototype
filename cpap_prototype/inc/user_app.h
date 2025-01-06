@@ -3,7 +3,7 @@
 ------------------------------------------------------------------------------
    Project  : Ventilator Control System
    File     : user_app.h
-   Brief    : Header file for user application logic (user_init, user_start, user_run).
+   Brief    : Header file for user application logic.
    Author   : Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
@@ -12,39 +12,52 @@
 #ifndef USER_APP_H
 #define USER_APP_H
 
-#include "bsp.h"  // User app will interact only with BSP for hardware functionality
+#include "bsp.h"
 
-/* Define the user application context structure */
+/* Hardware configuration type */
 typedef struct {
-    uint8_t hmiTxBuffer[HMI_BUFFER_SIZE];  /**< UART transmit buffer */
-    uint8_t hmiRxBuffer[HMI_BUFFER_SIZE];  /**< UART receive buffer */
-    uint32_t adcValues[NUM_ADC_CHANNELS];  /**< ADC values buffer */
-    float pressure;                        /**< Pressure value */
-    uint8_t toggleValue;                   /**< Toggle value for DMA streams */
-    uint8_t runFlag;                       /**< Run flag */
-} UserAppContext;
+    uint32_t timer_prescaler;
+    uint32_t adc_channels;
+    GPIO_TypeDef* valve_port;
+    uint16_t valve1_pin;
+    uint16_t valve2_pin;
+    ADC_HandleTypeDef* hadc;      
+    UART_HandleTypeDef* huart;    
+    TIM_HandleTypeDef* htim;      
+} hardware_config_t;
+
+/* Breathing parameters type */
+typedef struct {
+    float pressure_min;
+    float pressure_max;
+    float pressure_default;
+    uint32_t sample_rate_ms;
+} breathing_config_t;
+
+/* Communication parameters type */
+typedef struct {
+    uint32_t uart_buffer_size;
+    uint8_t uart_tx_flag;
+} comm_config_t;
+
+/* Application configuration type */
+typedef struct {
+    hardware_config_t hardware;
+    breathing_config_t breathing;
+    comm_config_t comm;
+} app_config_t;
+
+/* Application state type */
+typedef struct {
+    bsp_state_t bsp_state;         /* BSP state */
+    hardware_config_t hardware;     /* Hardware configuration */
+    breathing_config_t breathing;   /* Breathing parameters */
+    comm_config_t comm;            /* Communication parameters */
+} app_state_t;
 
 /* Function prototypes */
-
-/**
- * @brief Initializes the user application, peripherals, and context.
- *
- * @param context Pointer to the user application context.
- */
-void user_app_init(UserAppContext *context);
-
-/**
- * @brief Starts the user application, setting initial states and configurations.
- *
- * @param context Pointer to the user application context.
- */
-void user_app_start(UserAppContext *context);
-
-/**
- * @brief Main loop of the user application. Called repeatedly in the main loop.
- *
- * @param context Pointer to the user application context.
- */
-void user_app_run(UserAppContext *context);
+void user_app_init(app_state_t *app_state, const app_config_t *app_config);
+void user_app_start(app_state_t *app_state);
+void user_app_run(app_state_t *app_state);
 
 #endif /* USER_APP_H */

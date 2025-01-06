@@ -8,156 +8,94 @@
 */
 
 #include "bsp.h"
-#include "lib.h"
-#include "usart.h"
 #include "adc.h"
+#include "dma.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
-#include "main.h" // For definitions like Valve1_Pin, Valve2_Pin
 
-/* Private variables ---------------------------------------------------------*/
-static BSP_Context* bsp_context_ptr = NULL;  /**< Pointer to user application context */
+/* Private defines */
+#define ADC_TO_PRESSURE_FACTOR (10.0f / (4096.0f - 2055.0f))
 
-/* Function Implementations --------------------------------------------------*/
+/* Private state pointer for callbacks */
+static bsp_state_t* current_bsp_state = NULL;
 
-void BSP_Init(BSP_Context* context)
+void bsp_init(bsp_state_t* bsp_state)
 {
-    bsp_context_ptr = context;
+    current_bsp_state = bsp_state;
+
+    /* Initialize peripherals */
+    MX_GPIO_Init();
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_USART1_UART_Init();
+    MX_TIM3_Init();
 }
 
-void BSP_UART_Send_DMA(float pressureValue, uint8_t* txBuffer)
+void bsp_start_timer3(bsp_state_t* bsp_state, uint32_t prescaler)
 {
-    /* Convert pressure to 8-bit result for UART transmission */
-    Convert_To_EightBit(txBuffer, (uint32_t)pressureValue);
-
-    /* Set UART transmit buffer flags */
-    txBuffer[11] = UART_TX_COMPLETE_FLAG; /* Good message check */
-
-    /* Transmit data over UART using DMA */
-    HAL_UART_Transmit_DMA(&huart1, txBuffer, HMI_BUFFER_SIZE);
+    __HAL_TIM_SET_PRESCALER(&htim3, prescaler);
+    HAL_TIM_Base_Start_IT(&htim3);
 }
 
-void BSP_UART_DMA_Stop(void)
+void bsp_set_valve_state(bsp_state_t* bsp_state, GPIO_TypeDef* port, uint16_t pin, GPIO_PinState state)
 {
-    HAL_UART_DMAStop(&huart1);
+    HAL_GPIO_WritePin(port, pin, state);
 }
 
-void BSP_ADC_Start_DMA(uint32_t* adcValues, uint32_t num_channels)
+void bsp_start_adc_dma(bsp_state_t* bsp_state)
 {
-    HAL_ADC_Start_DMA(&hadc1, adcValues, num_channels);
+    HAL_ADC_Start_DMA(&hadc1, bsp_state->adcValues, NUM_ADC_CHANNELS);
 }
 
-void BSP_ADC_Stop_DMA(void)
+void bsp_stop_adc_dma(bsp_state_t* bsp_state)
 {
     HAL_ADC_Stop_DMA(&hadc1);
 }
 
-void BSP_TIM_Set_Prescaler(uint32_t prescaler)
+void bsp_send_uart_dma(bsp_state_t* bsp_state)
 {
-    /* Set TIM3 Prescaler */
-    __HAL_TIM_SET_PRESCALER(&htim3, prescaler);
+    memcpy(bsp_state->hmiTxBuffer, &bsp_state->pressure, sizeof(float));
+    bsp_state->hmiTxBuffer[HMI_BUFFER_SIZE - 1] = UART_TX_COMPLETE_FLAG;
+    HAL_UART_Transmit_DMA(&huart1, bsp_state->hmiTxBuffer, HMI_BUFFER_SIZE);
+}
 
-    /* Reinitialize TIM3 to apply prescaler */
-    if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+void bsp_stop_uart_dma(bsp_state_t* bsp_state)
+{
+    HAL_UART_DMAStop(&huart1);
+}
+
+/* HAL Callbacks */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    if (current_bsp_state != NULL && hadc->Instance == ADC1)
     {
-        Error_Handler();
-    }
-}
-
-void BSP_TIM_Start_IT(void)
-{
-    HAL_TIM_Base_Start_IT(&htim3);
-}
-
-void BSP_GPIO_WritePin(uint16_t Pin, GPIO_PinState PinState)
-{
-    HAL_GPIO_WritePin(GPIOB, Pin, PinState);
-}
-
-/* HAL Callback Implementations ------------------------------------------------*/
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-    /* Handle messages received from HMI */
-    if (huart->Instance == USART1 && bsp_context_ptr != NULL)
-    {
-        switch (bsp_context_ptr->hmiRxBuffer[0])
-        {
-            case 0U:
-                /* Start ventilation */
-                break;
-
-            case 1U:
-                /* Stop and reset */
-                break;
-
-            case 2U:
-                /* Update ventilation states */
-                break;
-
-            case 3U:
-                /* Calibrate system */
-                break;
-
-            case 4U:
-                /* Return current system state */
-                break;
-
-            default:
-                break;
-        }
-
-        /* Stop UART DMA stream */
-        HAL_UART_DMAStop(&huart1);
+        current_bsp_state->pressure = (float)current_bsp_state->adcValues[0] * ADC_TO_PRESSURE_FACTOR;
+        bsp_stop_adc_dma(current_bsp_state);
     }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-    /* Implement functionality if required */
+    if (current_bsp_state != NULL && huart->Instance == USART1)
+    {
+        bsp_stop_uart_dma(current_bsp_state);
+    }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    /* Toggle the valves when the timer period elapses */
-    if (htim->Instance == TIM3)
+    if (current_bsp_state != NULL && htim->Instance == TIM3)
     {
-        HAL_GPIO_TogglePin(GPIOB, Valve1_Pin);
-        HAL_GPIO_TogglePin(GPIOB, Valve2_Pin);
-    }
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-    /* Check if the ADC instance is ADC1 */
-    if (hadc->Instance == ADC1 && bsp_context_ptr != NULL)
-    {
-        /* Convert ADC value to pressure in cm H2O */
-        *(bsp_context_ptr->pressure) = (((float)(bsp_context_ptr->adcValues[0]) * 10.0f) / (4096.0f - 2055.0f) - 10.0686f) * 10.1972f;
-
-        /* Stop ADC DMA stream */
-        HAL_ADC_Stop_DMA(&hadc1);
-    }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    /* Handle external interrupt for ON and OFF pins */
-    if (bsp_context_ptr != NULL)
-    {
-        switch (GPIO_Pin)
+        if (current_bsp_state->pressure < current_bsp_state->pressure_threshold)
         {
-            case ON_Pin:
-                *(bsp_context_ptr->runFlag) = 1U;
-                break;
-
-            case OFF_Pin:
-                /* Implement OFF functionality if required */
-                __NOP();
-                break;
-
-            default:
-                break;
+            HAL_GPIO_TogglePin(GPIOB, Valve1_Pin);
+            HAL_GPIO_WritePin(GPIOB, Valve2_Pin, GPIO_PIN_RESET);
+        }
+        else
+        {
+            HAL_GPIO_WritePin(GPIOB, Valve1_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_TogglePin(GPIOB, Valve2_Pin);
         }
     }
 }

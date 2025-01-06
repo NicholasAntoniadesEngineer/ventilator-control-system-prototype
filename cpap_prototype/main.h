@@ -6,47 +6,36 @@
    Author 	: Nicholas Antoniades
 ------------------------------------------------------------------------------
 */
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef MAIN_H_
+#define MAIN_H_
 
+#include "user_app.h"
 
-#include "stm32f4xx_hal.h"
+/* Hardware configuration defaults */
+#define HARDWARE_TIMER_PRESCALER    17000U
+#define HARDWARE_ADC_CHANNELS       NUM_ADC_CHANNELS
+#define HARDWARE_VALVE_PORT         GPIOB
+#define HARDWARE_VALVE1_PIN         Valve1_Pin
+#define HARDWARE_VALVE2_PIN         Valve2_Pin
 
+/* Breathing parameters defaults */
+#define BREATHING_PRESSURE_MIN      -10.0f
+#define BREATHING_PRESSURE_MAX      20.0f
+#define BREATHING_PRESSURE_DEFAULT  5.0f
+#define BREATHING_SAMPLE_RATE_MS    50U
 
-void PWM_frequency_set(uint32_t Fpwm, uint32_t PSC);
+/* Communication parameters defaults */
+#define COMM_BUFFER_SIZE           HMI_BUFFER_SIZE
+#define COMM_TX_FLAG               UART_TX_COMPLETE_FLAG
 
+/* System state type */
+typedef struct {
+    app_state_t app_state;
+} system_state_t;
 
-#define B1_Pin GPIO_PIN_13
-#define B1_GPIO_Port GPIOC
-#define B1_EXTI_IRQn EXTI15_10_IRQn
-#define Valve1_Pin GPIO_PIN_13
-#define Valve1_GPIO_Port GPIOB
-#define Valve2_Pin GPIO_PIN_14
-#define Valve2_GPIO_Port GPIOB
-#define ON_Pin GPIO_PIN_4
-#define ON_GPIO_Port GPIOB
-#define ON_EXTI_IRQn EXTI4_IRQn
-#define OFF_Pin GPIO_PIN_5
-#define OFF_GPIO_Port GPIOB
-#define OFF_EXTI_IRQn EXTI9_5_IRQn
+/* Function prototypes */
+void Error_Handler(void);
+void SystemClock_Config(void);
 
-
-void initializations(void);
-void I2C_read(uint8_t Device_Addr, uint16_t Device_reg, uint8_t buff_tx[], uint8_t buff_rx[]);
-void I2C_write(uint8_t Device_Addr, uint16_t Device_reg, uint8_t buff_tx[], uint8_t buff_rx[]);
-//void CSBVTTEBV(uint8_t *result,uint16_t value);
-void splitSixteenToEight(uint8_t *result, uint16_t Long);
-float timeOverflow(void);
-void directionToggle(void);
-void directionToggleInverse(void);
-uint8_t CheckSum(uint8_t CommandArray[]);
-void CTBVTFEBV(uint8_t *eightBitresult,uint32_t value);
-void TMCL_UART_Message(uint8_t moduleAddress,uint8_t commandNumber,uint8_t commandType,uint8_t motorNumber,uint32_t commandValue);
-void HoneyWellPressure(uint8_t PressureBuffer[4], uint8_t StatusHoneywell,uint8_t PressureHoneywell, uint8_t TempHoneywell);
-void SensirionFlow(uint8_t FlowBuffer[3], float FlowSensirionOld[20],float FlowSensirion);
-void SensirionFlowSensor(uint8_t FlowBuffer[3], float FlowSensirion[20], float deltaFlow, float FlowSensirionTotal);
-void UARTSendDMA(uint8_t eightBitResult[4], float pressure,	uint8_t HMI_tx_buff[], uint8_t HMI_rx_buff[]);
-void IntegrationForVolume(float deltaFlow, float deltaTime,	float FlowSensirion[20], float TidalVolume[2]) ;
-
-#endif /* __MAIN_H */
+#endif /* MAIN_H_ */
 

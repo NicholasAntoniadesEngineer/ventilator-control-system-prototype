@@ -69,7 +69,6 @@ static void main_loop(void)
     }
 }
 
-/* Main function */
 int main(void)
 {
     system_init();

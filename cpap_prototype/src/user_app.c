@@ -13,70 +13,74 @@
 #include "bsp.h"
 
 /**
- * @brief Initializes the user application context and peripherals.
+ * @brief Initializes the application state and peripherals.
  *
- * @param context Pointer to the user application context.
+ * @param state Pointer to the application state.
+ * @param config Pointer to the application configuration.
  */
-void user_app_init(UserAppContext *context)
+void user_app_init(app_state_t *app_state, const app_config_t *app_config)
 {
-    /* Initialize the context structure values */
-    memset(context->hmiTxBuffer, 0, HMI_BUFFER_SIZE);
-    memset(context->hmiRxBuffer, 0, HMI_BUFFER_SIZE);
-    memset(context->adcValues, 0, sizeof(context->adcValues));
-    context->pressure = 0.0f;
-    context->toggleValue = 0U;
-    context->runFlag = 0U;
+    /* Initialize the state structure values */
+    memset(&app_state->bsp_state.hmiTxBuffer, 0, app_config->comm.uart_buffer_size);
+    memset(&app_state->bsp_state.hmiRxBuffer, 0, app_config->comm.uart_buffer_size);
+    memset(&app_state->bsp_state.adcValues, 0, sizeof(app_state->bsp_state.adcValues));
+    app_state->bsp_state.pressure = 0.0f;
+    app_state->bsp_state.toggleValue = 0U;
+    app_state->bsp_state.runFlag = 0U;
 
-    /* Additional user-specific initialization can be added here */
+    /* Copy config values to state */
+    app_state->hardware = app_config->hardware;
+    app_state->breathing = app_config->breathing;
+    app_state->comm = app_config->comm;
 
-    /* Initialize hardware using BSP */
-    bsp_init();
+    /* Initialize BSP with state */
+    bsp_init(&app_state->bsp_state);
 }
 
 /**
- * @brief Starts the user application, sets initial configurations and states.
+ * @brief Starts the application, sets initial configurations and states.
  *
- * @param context Pointer to the user application context.
+ * @param state Pointer to the application state.
  */
-void user_app_start(UserAppContext *context)
+void user_app_start(app_state_t *app_state)
 {
     /* Wait until the run flag is set by external conditions */
-    while (context->runFlag == 0U)
+    while (app_state->bsp_state.runFlag == 0U)
     {
-        __NOP();  /* Do nothing, waiting for run flag to be set */
+        __NOP();
     }
 
     /* Configure TIM3 for valve control and start its interrupt */
-    bsp_start_timer3(17000U);
+    bsp_start_timer3(&app_state->bsp_state, app_state->hardware.timer_prescaler);
 
     /* Set initial valve conditions */
-    bsp_set_valve_state(GPIOB, Valve1_Pin, GPIO_PIN_RESET);
-    bsp_set_valve_state(GPIOB, Valve2_Pin, GPIO_PIN_SET);
+    bsp_set_valve_state(&app_state->bsp_state, 
+                       app_state->hardware.valve_port, 
+                       app_state->hardware.valve1_pin, 
+                       GPIO_PIN_RESET);
+    bsp_set_valve_state(&app_state->bsp_state, 
+                       app_state->hardware.valve_port, 
+                       app_state->hardware.valve2_pin, 
+                       GPIO_PIN_SET);
 }
 
 /**
  * @brief Main application loop that runs continuously.
  *
- * @param context Pointer to the user application context.
+ * @param state Pointer to the application state.
  */
-void user_app_run(UserAppContext *context)
+void user_app_run(app_state_t *app_state)
 {
-    while (1)
+    if (app_state->bsp_state.toggleValue == 1U)
     {
-        HAL_Delay(50U);
-
-        /* Toggle between sending UART data and reading ADC values */
-        if (context->toggleValue == 1U)
-        {
-            bsp_stop_adc_dma();
-            bsp_send_uart_dma(context->pressure);  /* Send pressure over UART */
-            context->toggleValue = 0U;
-        }
-        else
-        {
-            bsp_stop_uart_dma();
-            bsp_start_adc_dma(context->adcValues, NUM_ADC_CHANNELS);  /* Read ADC values */
-            context->toggleValue = 1U;
-        }
+        bsp_stop_adc_dma(&app_state->bsp_state);
+        bsp_send_uart_dma(&app_state->bsp_state);
+        app_state->bsp_state.toggleValue = 0U;
+    }
+    else
+    {
+        bsp_stop_uart_dma(&app_state->bsp_state);
+        bsp_start_adc_dma(&app_state->bsp_state);
+        app_state->bsp_state.toggleValue = 1U;
     }
 }
