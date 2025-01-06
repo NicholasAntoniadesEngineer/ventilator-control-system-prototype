@@ -40,7 +40,7 @@ const struct ventilator_config vent_config = {
 static void system_init(void)
 {
     /* Initialize BSP and peripherals */
-    BSP_HAL_Init();
+    stm32_bsp_hal_init();
     
     /* Initialize application state with config */
     ventilator_control_init(&state.ventilator_control, &vent_config);
@@ -55,7 +55,7 @@ static void main_loop(void)
     while (1)
     {
         /* Read sensors and update state */
-        BSP_ADC_Start_DMA(&hadc1, (uint32_t*)state.ventilator_control.bsp_state.adcValues, 
+        stm32_bsp_adc_start_dma(&hadc1, (uint32_t*)state.ventilator_control.bsp_state.adcValues, 
                          BSP_NUM_ADC_CHANNELS);
 
         /* Update application state */
@@ -67,11 +67,11 @@ static void main_loop(void)
             uint8_t tx_buffer[BSP_HMI_BUFFER_SIZE];
             memcpy(tx_buffer, &state.ventilator_control.bsp_state.pressure, sizeof(float));
             tx_buffer[BSP_HMI_BUFFER_SIZE - 1] = BSP_UART_TX_COMPLETE_FLAG;
-            BSP_UART_Transmit_DMA(&huart1, tx_buffer, BSP_HMI_BUFFER_SIZE);
+            stm32_bsp_uart_transmit_dma(&huart1, tx_buffer, BSP_HMI_BUFFER_SIZE);
         }
 
         /* Delay for next sample */
-        BSP_Delay(state.ventilator_control.breathing.sample_rate_ms);
+        stm32_bsp_delay(state.ventilator_control.breathing.sample_rate_ms);
     }
 }
 

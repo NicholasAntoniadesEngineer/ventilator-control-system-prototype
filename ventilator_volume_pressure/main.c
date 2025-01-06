@@ -38,7 +38,7 @@ const struct ventilator_config vent_config = {
 /* Private function definitions */
 static void system_init(void)
 {
-	BSP_HAL_Init();
+	stm32_bsp_hal_init();
 
 	timers_init(&state.timers);
 
