@@ -1,11 +1,11 @@
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main application code for CPAP ventilator control system
-  * @date           : 2024
-  * @author         : Nicholas Antoniades
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main application code for CPAP ventilator control system
+ * @date           : 2024
+ * @author         : Nicholas Antoniades
+ ******************************************************************************
+ */
 
 #include "main.h"
 #include "stm32_bsp.h"

@@ -1,11 +1,11 @@
 /*
-------------------------------------------------------------------------------
-   Project	: Ventilator control system
-   File     : main.h
-   Brief    : Header file for main.c
-   Author 	: Nicholas Antoniades
-------------------------------------------------------------------------------
-*/
+ ******************************************************************************
+ * @file           : main.h
+ * @brief          : Header file for CPAP ventilator control system
+ * @date           : 2024
+ * @author         : Nicholas Antoniades
+ ******************************************************************************
+ */
 #ifndef MAIN_H_
 #define MAIN_H_
 

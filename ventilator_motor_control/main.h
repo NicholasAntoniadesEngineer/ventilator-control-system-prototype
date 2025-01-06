@@ -1,3 +1,12 @@
+/*
+ ******************************************************************************
+ * @file           : main.h
+ * @brief          : Header file for main.c in motor control module
+ * @date           : 2020
+ * @author         : Nicholas Antoniades
+ ******************************************************************************
+ */
+
 #ifndef MAIN_H_
 #define MAIN_H_
 

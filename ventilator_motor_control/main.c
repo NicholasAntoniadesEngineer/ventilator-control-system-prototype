@@ -1,7 +1,10 @@
 /*
- * main.c
- * Created on: 24 Apr 2020
- * Author: Nicholas Antoniades
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main application code for motor control in ventilator system
+ * @date           : 2020
+ * @author         : Nicholas Antoniades
+ ******************************************************************************
  */
 
 /* Includes */
