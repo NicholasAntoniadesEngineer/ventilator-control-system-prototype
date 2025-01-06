@@ -38,12 +38,10 @@ int main(void)
 		{
             // Button released
             sensor_read_and_send(&state.sensors);
-			
         } else {
             // Button pressed
             handle_state_machine(&state);
         }
     }
-    
     return 0;
 }
