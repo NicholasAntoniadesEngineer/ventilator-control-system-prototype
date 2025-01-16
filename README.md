@@ -1,4 +1,4 @@
-# Ventilator Control System Prototypes (2019)
+# Ventilator Control System Prototypes (2021)
 
 This repository contains three prototype implementations for ventilator control systems, each designed to test different approaches and hardware configurations. The project includes embedded C code for STM32 microcontrollers and a Python GUI application for real-time monitoring.
 
